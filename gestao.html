@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão - Porto Oásis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: { 'fade-in': 'fadeIn 1s ease-in-out' },
+                    keyframes: { fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } } }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- NAVBAR -->
+    <nav class="bg-blue-900 shadow-lg fixed w-full z-50">
+        <div class="max-w-7xl mx-auto px-4 flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <a href="index.html" class="flex items-center hover:opacity-80 transition-opacity">
+                        <i class="fas fa-ship text-white text-2xl mr-2"></i>
+                        <span class="text-white font-bold text-xl">Porto Oasis</span>
+                    </a>
+                </div>
+            <div class="hidden md:flex space-x-8">
+                <a href="index.html#home" class="text-white hover:text-blue-200 transition">Início</a>
+                <a href="index.html#rotas" class="text-white hover:text-blue-200 transition">Rotas</a>
+                <a href="index.html#rastreamento" class="text-white hover:text-blue-200 transition">Rastreamento</a>
+                <a href="gestao.html" class="text-white hover:text-blue-200 font-bold border-b-2 border-white">Gestão</a>
+                <a href="index.html#comunicacao" class="text-white hover:text-blue-200 transition">Contato</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- CONTEÚDO GESTÃO -->
+    <section class="pt-28 pb-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4">
+            <h1 class="text-4xl font-bold text-center text-blue-900 mb-12 animate-fade-in">Gestão e Equipe Operacional</h1>
+
+            <!-- Cada bloco de cargo -->
+            <div class="space-y-16">
+
+                <!-- DIRETORES -->
+                <div>
+                    <h2 class="text-2xl font-semibold text-center mb-6 text-gray-700">Diretor de Operações Portuárias</h2>
+                    <div class="flex flex-wrap justify-center gap-10">
+                        <div class="text-center">
+                            <img src="Arthur.jpg" alt="Arthur" class="w-40 h-40 rounded-full object-cover shadow-lg hover:scale-105 transition-transform duration-300">
+                            <p class="mt-3 font-semibold">Arthur</p>
+                        </div>
+                        <div class="text-center">
+                            <img src="Raynara.jpg" alt="Raynara" class="w-40 h-40 rounded-full object-cover shadow-lg hover:scale-105 transition-transform duration-300">
+                            <p class="mt-3 font-semibold">Raynara</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GERENTES -->
+                <div>
+                    <h2 class="text-2xl font-semibold text-center mb-6 text-gray-700">Gerente de Logística Naval</h2>
+                    <div class="flex flex-wrap justify-center gap-10">
+                        <div class="text-center">
+                            <img src="Marcos.jpg" alt="Marcos" class="w-40 h-40 rounded-full object-cover shadow-lg hover:scale-105 transition-transform duration-300">
+                            <p class="mt-3 font-semibold">Marcos</p>
+                        </div>
+                        <div class="text-center">
+                            <img src="Yasmin.jpg" alt="Yasmin" class="w-40 h-40 rounded-full object-cover shadow-lg hover:scale-105 transition-transform duration-300">
+                            <p class="mt-3 font-semibold">Yasmin</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COMEX -->
+                <div>
+                    <h2 class="text-2xl font-semibold text-center mb-6 text-gray-700">Gerente de Comércio Exterior (Comex)</h2>
+                    <div class="flex flex-wrap justify-center gap-10">
+                        <div class="text-center">
+                            <img src="Ester.jpg" alt="Ester" class="w-40 h-40 rounded-full object-cover shadow-lg hover:scale-105 transition-transform duration-300">
+                            <p class="mt-3 font-semibold">Ester</p>
+                        </div>
+                        <div class="text-center">
+                            <img src="Veronica.jpg" alt="Verônica" class="w-40 h-40 rounded-full object-cover shadow-lg hover:scale-105 transition-transform duration-300">
+                            <p class="mt-3 font-semibold">Verônica</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUPERVISORES -->
+                <div>
+                    <h2 class="text-2xl font-semibold text-center mb-6 text-gray-700">Supervisor de Operações Portuárias</h2>
+                    <div class="flex flex-wrap justify-center gap-10">
+                        <div class="text-center">
+                            <img src="Isys.jpg" alt="Isys" class="w-40 h-40 rounded-full object-cover shadow-lg hover:scale-105 transition-transform duration-300">
+                            <p class="mt-3 font-semibold">Isys</p>
+                        </div>
+                        <div class="text-center">
+                            <img src="Lara.jpg" alt="Lara Bianca" class="w-40 h-40 rounded-full object-cover shadow-lg hover:scale-105 transition-transform duration-300">
+                            <p class="mt-3 font-semibold">Lara Bianca</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PLANEJADOR -->
+                <div>
+                    <h2 class="text-2xl font-semibold text-center mb-6 text-gray-700">Planejador de Cargas e Conferente de Carga</h2>
+                    <div class="flex flex-wrap justify-center gap-10">
+                        <div class="text-center">
+                            <img src="Juliana.jpg" alt="Juliana Carla" class="w-40 h-40 rounded-full object-cover shadow-lg hover:scale-105 transition-transform duration-300">
+                            <p class="mt-3 font-semibold">Juliana Carla</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ASSISTENTE -->
+                <div>
+                    <h2 class="text-2xl font-semibold text-center mb-6 text-gray-700">Assistente Administrativo Portuário</h2>
+                    <div class="flex flex-wrap justify-center gap-10">
+                        <div class="text-center">
+                            <img src="Alessa.jpg" alt="Alessa" class="w-40 h-40 rounded-full object-cover shadow-lg hover:scale-105 transition-transform duration-300">
+                            <p class="mt-3 font-semibold">Alessa</p>
+                        </div>
+                    </div>
+                </div>
+
+
+
+               <!-- ANALISTA DE INFORMÁTICA -->
+                <div>
+                    <h2 class="text-2xl font-semibold text-center mb-6 text-gray-700">Analista de Informática</h2>
+                    <div class="flex flex-wrap justify-center gap-10">
+                        <div class="text-center">
+                            <img src="Danilo.webp" alt="danilo" class="w-40 h-40 rounded-full object-cover shadow-lg hover:scale-105 transition-transform duration-300">
+                            <p class="mt-3 font-semibold">Danilo Miguel</p>
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+
+
+
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-blue-900 text-white py-8 mt-10">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p>&copy; Porto Oásis | Made By Danilo: Logística Naval & Portuária</p>
+        </div>
+    </footer>
+</body>
+</html>

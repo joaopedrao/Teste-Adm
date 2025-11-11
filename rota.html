@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rastreamento - Porto Oásis</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'fade-in': 'fadeIn 1s ease-in-out',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Estilos customizados para o mapa */
+        #map { 
+            height: 500px;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Fundo do mapa mais escuro para a camada 'dark_all' */
+        .leaflet-container { 
+            background: #1e293b; /* Cor de fundo escura, similar ao dark mode do Tailwind */
+        }
+        
+        .timeline { 
+            max-height: 400px; 
+            overflow-y: auto; 
+        }
+        
+        /* Estilos de cor solicitados */
+        .origin-highlight {
+            background-color: #dbeafe; /* Azul clarinho (Tailwind blue-100) */
+            color: #1e3a8a; /* Texto escuro para contraste */
+            font-weight: bold;
+        }
+        
+        .destination-highlight {
+            background-color: #dcfce7; /* Verde clarinho (Tailwind green-100) */
+            color: #166534; /* Texto escuro para contraste */
+            font-weight: bold;
+        }
+        
+        /* Ajuste para o ícone do navio */
+        .ship-icon {
+            font-size: 2.2rem; /* Tamanho maior para o emoji */
+            line-height: 1; /* Para centralizar verticalmente */
+            text-align: center;
+            display: block;
+        }
+        
+        /* Estilo para a barra de progresso customizada */
+        .progress-container {
+            position: relative;
+            height: 1.5rem;
+            background-color: #e5e7eb;
+            border-radius: 0.375rem;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: #3b82f6;
+            border-radius: 0.375rem;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-dot {
+            position: absolute;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            border: 2px solid white;
+            z-index: 10;
+        }
+        
+        /* Responsividade para telas menores */
+        @media (max-width: 768px) {
+            #map {
+                height: 350px;
+            }
+            
+            .timeline {
+                max-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Navbar (mantida do index.html) -->
+    <nav class="bg-blue-900 shadow-lg fixed w-full z-50">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <a href="index.html" class="flex items-center hover:opacity-80 transition-opacity">
+                        <i class="fas fa-ship text-white text-2xl mr-2"></i>
+                        <span class="text-white font-bold text-xl">Porto Oasis</span>
+                    </a>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="index.html#home" class="text-white hover:text-blue-200 transition">Início</a>
+                    <a href="index.html#rotas" class="text-white hover:text-blue-200 transition">Rotas</a>
+                    <a href="index.html#rastreamento" class="text-white hover:text-blue-200 transition">Rastreamento</a>
+                    <a href="gestao.html" class="text-white hover:text-blue-200 transition">Gestão</a>
+                    <a href="index.html#comunicacao" class="text-white hover:text-blue-200 transition">Contato</a>
+                </div>
+                <button id="mobile-menu-button" class="md:hidden text-white focus:outline-none">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden">
+            <a href="index.html#home" class="block py-2 px-4 text-sm text-white hover:bg-blue-800 transition">Início</a>
+            <a href="index.html#rotas" class="block py-2 px-4 text-sm text-white hover:bg-blue-800 transition">Rotas</a>
+            <a href="index.html#rastreamento" class="block py-2 px-4 text-sm text-white hover:bg-blue-800 transition">Rastreamento</a>
+            <a href="gestao.html" class="block py-2 px-4 text-sm text-white hover:bg-blue-800 transition">Gestão</a>
+            <a href="index.html#comunicacao" class="block py-2 px-4 text-sm text-white hover:bg-blue-800 transition">Contato</a>
+        </div>
+    </nav>
+
+    <!-- Conteúdo principal -->
+    <main class="pt-20 max-w-7xl mx-auto px-4 py-8">
+        <section class="mb-8">
+            <h2 class="text-3xl font-bold text-center mb-6 text-blue-900 animate-fade-in">
+                <i class="fas fa-map-marker-alt mr-2"></i> Rastreamento de Transporte Naval
+            </h2>
+            <p class="text-center text-gray-600 mb-8 animate-slide-up">
+                Monitore em tempo real a localização e o progresso das suas cargas marítimas
+            </p>
+            
+            <div class="bg-white p-6 rounded-lg shadow-md animate-slide-up">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
+                    <div class="lg:col-span-2">
+                        <label for="origin" class="block text-sm font-medium text-gray-700 mb-1">Origem:</label>
+                        <select id="origin" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 origin-highlight">
+                            <option value="shanghai">Porto de Shanghai, China</option>
+                            <option value="singapore">Porto de Singapura</option>
+                            <option value="colombo">Porto de Colombo, Sri Lanka</option>
+                            <option value="cape-town">Porto de Cidade do Cabo, África do Sul</option>
+                            <option value="santos">Porto de Santos, Brasil</option>
+                            <option value="oasis">Porto Oásis, São Luís, Maranhão</option>
+                        </select>
+                    </div>
+                    <div class="lg:col-span-2">
+                        <label for="destination" class="block text-sm font-medium text-gray-700 mb-1">Destino:</label>
+                        <select id="destination" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 destination-highlight">
+                            <option value="oasis">Porto Oásis, São Luís, Maranhão</option>
+                            <option value="shanghai">Porto de Shanghai, China</option>
+                            <option value="singapore">Porto de Singapura</option>
+                            <option value="colombo">Porto de Colombo, Sri Lanka</option>
+                            <option value="cape-town">Porto de Cidade do Cabo, África do Sul</option>
+                            <option value="santos">Porto de Santos, Brasil</option>
+                        </select>
+                    </div>
+                    <div class="lg:col-span-2">
+                        <button id="trace-route" class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition font-semibold animate-slide-up">
+                            <i class="fas fa-route mr-2"></i> Traçar Rota
+                        </button>
+                    </div>
+                </div>
+                <p id="status" class="text-center text-blue-600 mt-3"></p>
+            </div>
+        </section>
+
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Mapa -->
+            <div class="lg:col-span-2">
+                <div id="map" class="w-full"></div>
+            </div>
+            
+            <!-- Histórico da Viagem -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-xl font-semibold text-blue-900 mb-4">
+                    <i class="fas fa-history mr-2"></i> Histórico da Viagem
+                </h3>
+                
+                <!-- Barra de progresso customizada -->
+                <div id="progress-container" class="mb-6">
+                    <div class="progress-container">
+                        <div id="progress" class="progress-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <ul id="timeline" class="timeline space-y-2">
+                    <li class="text-gray-500 p-2 rounded">Aguardando traçado da rota...</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer (mantido do index.html) -->
+    <footer class="bg-blue-900 text-white py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p>&copy; Porto Oásis. | Made By Danilo: Logística Naval & Portuária</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    
+    <script>
+        // Data atual
+        const currentDate = new Date('2025-10-21');
+
+        // Ordem dos portos ao longo da rota
+        const portOrder = ['shanghai', 'singapore', 'colombo', 'cape-town', 'santos', 'oasis'];
+
+        // Dicionário de coordenadas e nomes de portos
+        const ports = {
+            shanghai: { coords: [31.2304, 121.4737], name: 'Porto de Shanghai, China' },
+            singapore: { coords: [1.3521, 103.8198], name: 'Porto de Singapura' },
+            colombo: { coords: [6.5244, 79.9011], name: 'Porto de Colombo, Sri Lanka' },
+            'cape-town': { coords: [-33.9189, 18.4233], name: 'Porto de Cidade do Cabo, África do Sul' },
+            santos: { coords: [-23.5505, -46.6333], name: 'Porto de Santos, Brasil' },
+            oasis: { coords: [-2.5307, -44.3068], name: 'Porto Oásis, São Luís, Maranhão' }
+        };
+
+        // Inicializar o mapa
+        const map = L.map('map', {
+            zoomControl: false, // Remove controles de zoom
+            scrollWheelZoom: false, // Desativa zoom com scroll
+            doubleClickZoom: false, // Desativa zoom com duplo clique
+            boxZoom: false, // Desativa zoom com arraste
+            keyboard: false, // Desativa zoom com teclado
+            dragging: false // Desativa arrastar o mapa
+        }).setView([0, 0], 2);
+
+        // Camada de mapa escura
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> & <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Ícone do navio cargueiro (emoji)
+        const shipIcon = L.divIcon({
+            className: 'ship-icon', // Classe para estilização no CSS
+            html: '🚢', 
+            iconSize: [30, 30], // Ajuste o tamanho conforme a necessidade
+            iconAnchor: [15, 15] // Ponto de âncora do ícone
+        });
+
+        let shipMarker;
+        let route;
+        let animationRunning = false;
+        let portMarkers = [];
+
+        // Função para interpolar pontos
+        function interpolate(start, end, t) {
+            return [
+                start[0] + (end[0] - start[0]) * t,
+                start[1] + (end[1] - start[1]) * t
+            ];
+        }
+
+        // Função para calcular data interpolada
+        function getInterpolatedDate(startDate, totalDays, t) {
+            const date = new Date(startDate);
+            date.setDate(date.getDate() + Math.floor(totalDays * t));
+            return date.toLocaleDateString('pt-BR');
+        }
+
+        // Função para adicionar entrada no histórico com cores
+        function addTimelineEntry(message, type = 'default') {
+            const timeline = document.getElementById('timeline');
+            const li = document.createElement('li');
+            li.className = 'p-2 rounded text-sm';
+
+            if (type === 'origin') {
+                li.classList.add('origin-highlight');
+                li.innerHTML = `<i class="fas fa-play-circle mr-2"></i> ${message}`;
+            } else if (type === 'destination') {
+                li.classList.add('destination-highlight');
+                li.innerHTML = `<i class="fas fa-check-circle mr-2"></i> ${message}`;
+            } else if (type === 'stop') {
+                li.classList.add('bg-blue-100', 'text-blue-800');
+                li.innerHTML = `<i class="fas fa-clock mr-2"></i> ${message}`;
+            } else {
+                li.classList.add('bg-gray-100', 'text-gray-600');
+                li.innerHTML = `<i class="fas fa-info-circle mr-2"></i> ${message}`;
+            }
+            
+            timeline.appendChild(li);
+            timeline.scrollTop = timeline.scrollHeight;
+        }
+
+        // Evento para traçar rota
+        document.getElementById('trace-route').addEventListener('click', () => {
+            if (animationRunning) return;
+
+            const originKey = document.getElementById('origin').value;
+            const destKey = document.getElementById('destination').value;
+            const originName = ports[originKey].name;
+            const destName = ports[destKey].name;
+
+            if (originKey === destKey) {
+                alert('Origem e destino não podem ser os mesmos.');
+                return;
+            }
+
+            // Lógica de construção da rota
+            const indexOrigin = portOrder.indexOf(originKey);
+            const indexDest = portOrder.indexOf(destKey);
+            let routeKeys;
+            if (indexOrigin < indexDest) {
+                routeKeys = portOrder.slice(indexOrigin, indexDest + 1);
+            } else {
+                routeKeys = portOrder.slice(indexDest, indexOrigin + 1).reverse();
+            }
+
+            const routePoints = routeKeys.map(key => ports[key].coords);
+            const portNames = routeKeys.map(key => ports[key].name);
+
+            // Limpar mapa anterior
+            if (route) route.remove();
+            if (shipMarker) shipMarker.remove();
+            portMarkers.forEach(marker => marker.remove());
+            portMarkers = [];
+
+            // Desenhar a rota
+            route = L.polyline(routePoints, {color: '#3b82f6', weight: 4, opacity: 0.7, dashArray: '8, 8'}).addTo(map);
+            map.fitBounds(route.getBounds(), {padding: [20, 20]});
+
+            // Adicionar marcadores para os portos
+            routePoints.forEach((point, index) => {
+                let markerColor = '#6b7280'; // Cor padrão (cinza para paradas)
+                if (index === 0) markerColor = '#3b82f6'; // Azul para ORIGEM
+                else if (index === routePoints.length - 1) markerColor = '#10b981'; // Verde para DESTINO
+                
+                const customIcon = L.divIcon({
+                    className: '',
+                    html: `<i class="fas fa-map-pin" style="color: ${markerColor}; font-size: 24px;"></i>`,
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 24]
+                });
+
+                const marker = L.marker(point, {icon: customIcon}).addTo(map).bindPopup(portNames[index]);
+                portMarkers.push(marker);
+            });
+
+            shipMarker = L.marker(routePoints[0], {icon: shipIcon}).addTo(map);
+
+            // Configurar barra de progresso
+            const progressContainer = document.getElementById('progress-container');
+            progressContainer.innerHTML = `
+                <div class="progress-container">
+                    <div id="progress" class="progress-bar" style="width: 0%"></div>
+                </div>
+            `;
+            const progressArea = progressContainer.querySelector('.progress-container');
+
+            // Adicionar bolinhas de parada (Pontos de interesse)
+            const numPorts = routePoints.length;
+            for (let i = 0; i < numPorts; i++) {
+                const dot = document.createElement('div');
+                dot.id = `dot-${i}`;
+                dot.classList.add('progress-dot');
+                
+                if (i === 0) {
+                    dot.classList.add('bg-blue-500'); // Cor da origem
+                } else if (i === numPorts - 1) {
+                    dot.classList.add('bg-green-500'); // Cor do destino
+                } else {
+                    dot.classList.add('bg-gray-500'); // Cor das paradas
+                }
+
+                dot.style.left = `${(i / (numPorts - 1)) * 100}%`;
+                progressArea.appendChild(dot);
+            }
+            
+            // Iniciar simulação
+            animationRunning = true;
+            document.getElementById('status').textContent = 'Traçando rota...';
+            document.getElementById('timeline').innerHTML = ''; // Limpar histórico
+
+            addTimelineEntry(`Início da Viagem: Partindo de ${originName}.`, 'origin');
+
+            const stepsPerSegment = 150; // Aumentei os passos para animação mais suave
+            const totalSegments = routePoints.length - 1;
+            const totalSteps = stepsPerSegment * totalSegments;
+            let currentStep = 0;
+            const totalDays = totalSegments * 7; // Dias arbitrários por segmento
+            const estimatedArrival = new Date(currentDate);
+            estimatedArrival.setDate(estimatedArrival.getDate() + totalDays);
+            addTimelineEntry(`Estimativa de Chegada em ${destName}: ${estimatedArrival.toLocaleDateString('pt-BR')}.`);
+
+            const interval = setInterval(() => {
+                if (currentStep >= totalSteps) {
+                    clearInterval(interval);
+                    // Preencher bolinha final (destino)
+                    document.getElementById(`dot-${numPorts - 1}`).classList.replace('bg-green-500', 'bg-green-500');
+                    addTimelineEntry(`Chegada Final: Navio chegou em ${destName} na data ${getInterpolatedDate(currentDate, totalDays, 1)}.`, 'destination');
+                    document.getElementById('status').textContent = 'Simulação concluída!';
+                    animationRunning = false;
+                    return;
+                }
+
+                const segmentIndex = Math.floor(currentStep / stepsPerSegment);
+                const t = (currentStep % stepsPerSegment) / stepsPerSegment;
+                const start = routePoints[segmentIndex];
+                const end = routePoints[segmentIndex + 1];
+                const position = interpolate(start, end, t);
+                shipMarker.setLatLng(position);
+
+                // Atualizar progresso
+                const progressValue = ((segmentIndex + t) / totalSegments) * 100;
+                const progressBar = document.getElementById('progress');
+                progressBar.style.width = `${progressValue}%`;
+
+                // Destaque nas paradas
+                if (t >= 0.99 && segmentIndex < totalSegments - 1) {
+                    addTimelineEntry(`Parada Intermediária: Chegou no ${portNames[segmentIndex + 1]}.`, 'stop');
+                    // Mudar a cor da bolinha de parada
+                    document.getElementById(`dot-${segmentIndex + 1}`).classList.replace('bg-gray-500', 'bg-blue-500');
+                }
+
+                currentStep++;
+            }, 15); // Velocidade da animação (ms)
+        });
+
+        // Menu móvel (mantido do index.html)
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Opcional: Fecha o menu móvel ao clicar em um link
+        document.querySelectorAll('#mobile-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+    </script>
+</body>
+</html>
